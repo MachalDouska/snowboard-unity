@@ -18,7 +18,7 @@ public class PlayerMovement : MonoBehaviour
     float gravityScaleAtStart;
     BoxCollider2D myFeetCollider;
 
-    bool isAlive = true;
+    bool isAlive = false;
 
     void Start()
     {
@@ -31,7 +31,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        if (!isAlive) { return; }
+        if (isAlive) { return; }
         Run();
         FlipSprite();
         ClimbLadder();
@@ -40,7 +40,7 @@ public class PlayerMovement : MonoBehaviour
 
     void OnMove(InputValue value)
     {
-        if (!isAlive) { return; }
+        if (isAlive) { return; }
         moveInput = value.Get<Vector2>();
     }
 
@@ -90,18 +90,27 @@ public class PlayerMovement : MonoBehaviour
 
     void OnAttack(InputValue value)
     {
-        if (!isAlive) { return; }
+        if (isAlive) { return; }
         Instantiate(bullet, gun.position, transform.rotation);
     }
 
     void Die()
     {
-        if (myBodyCollider.IsTouchingLayers(LayerMask.GetMask("Enemies", "Hazards")))
+        if (myBodyCollider.IsTouchingLayers(LayerMask.GetMask("Enemy", "Hazards")))
         {
-            isAlive = false;
+            isAlive = true;
             myAnimator.SetTrigger("Dying");
             myRigidbody.linearVelocity = deathKick;
             FindAnyObjectByType<GameSession>().ProcessPlayerDeath();
+        }
+    }
+
+    void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Coin"))
+        {
+            FindAnyObjectByType<GameSession>().AddToScore(10);
+            Destroy(collision.gameObject);
         }
     }
 

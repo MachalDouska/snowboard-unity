@@ -14,6 +14,7 @@ public class GameSession : MonoBehaviour
     void Awake()
     {
         int numberGameSessions = FindObjectsByType<GameSession>(FindObjectsSortMode.None).Length;
+        DontDestroyOnLoad(livesText.transform.parent.gameObject); 
         if (numberGameSessions > 1)
         {
             Destroy(gameObject);
@@ -32,7 +33,8 @@ public class GameSession : MonoBehaviour
 
     public void ProcessPlayerDeath()
     {
-        if (playerLives > 1)
+        
+        if (playerLives > 0)
         {
             TakeLife();
         }
@@ -51,15 +53,23 @@ public class GameSession : MonoBehaviour
     void TakeLife()
     {
         playerLives--;
+        livesText.text = playerLives.ToString();
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         SceneManager.LoadScene(currentSceneIndex);
-        livesText.text = playerLives.ToString();
     }
 
     void ResetGameSession()
     {
-        FindFirstObjectByType<ScenePersist>().ResetScenePersist();
+        var persist = FindFirstObjectByType<ScenePersist>();
+        if (persist != null)
+        {
+            persist.ResetScenePersist();
+        }
+
         SceneManager.LoadScene(0);
-        Destroy(gameObject);
+        Destroy(gameObject); 
+        Destroy(scoreText.gameObject);
+        Destroy(livesText.gameObject);
     }
+    
 }
